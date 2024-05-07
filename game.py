@@ -29,11 +29,13 @@ blue_rect_x, blue_rect_y = width // 2 - 25, 0
 blue_rect_width, blue_rect_height = 50, 50
 blue_rect_speed = 5
 
-bullets = []
+bulletsRed = []
+bulletsBlue = []
 
 blue_rect_hit = False  # Flag to track if the blue rectangle has been hit
 red_rect_hit = False # Flag to track if the red rectangle has been hit
 red_wins_message = False  # Flag to track if the "Red Wins" message has been displayed
+blue_wins_message = False
 
 # Fonts
 font = pygame.font.Font(None, 74)
@@ -49,12 +51,12 @@ while True:
                 if not blue_rect_hit:  # Allow shooting only if the blue rectangle has not been hit
                     shot_x = rect_x + rect_width // 2 - shooter_width // 2
                     shot_y = rect_y - 20
-                    bullets.append((shot_x, shot_y))
+                    bulletsRed.append((shot_x, shot_y))
             if event.key == pygame.K_q:
                 if not red_rect_hit:  # Allow shooting only if the blue rectangle has not been hit
                     shot_x = blue_rect_x + blue_rect_width // 2 - shooter_width // 2
                     shot_y = blue_rect_y + blue_rect_height
-                    bullets.append((shot_x, shot_y))
+                    bulletsBlue.append((shot_x, shot_y))
 
     keys = pygame.key.get_pressed()
     if keys[pygame.K_LEFT] and rect_x > 0:
@@ -76,42 +78,45 @@ while True:
 
 
     # Update bullets positions
-    for i in range(len(bullets)):
-        bullets[i] = (bullets[i][0], bullets[i][1] - shooter_speed)
+    for i in range(len(bulletsBlue)):
+        bulletsBlue[i] = (bulletsBlue[i][0], bulletsBlue[i][1] + shooter_speed)
+
+    for i in range(len(bulletsRed)):
+        bulletsRed[i] = (bulletsRed[i][0], bulletsRed[i][1] - shooter_speed)
 
     # Remove bullets that are out of the screen
-    bullets = [(x, y) for x, y in bullets if y > 0]
+    bulletsBlue = [(x, y) for x, y in bulletsBlue if y > 0]
+    bulletsRed = [(x, y) for x, y in bulletsRed if y > 0]
 
-# Check for collision with blue rectangle
-for bullet in bullets.copy():
-    bullet_x, bullet_y = bullet
-    if (
-        not blue_rect_hit
-        and not red_rect_hit
-        and bullet_x < blue_rect_x + blue_rect_width
-        and bullet_x + shooter_width > blue_rect_x
-        and bullet_y < blue_rect_y + blue_rect_height
-        and bullet_y + shooter_height > blue_rect_y
-    ):
-        bullets.remove(bullet)
-        blue_rect_hit = True
-        red_wins_message = False
+    # Check for collision with blue rectangle
+    for bullet in bulletsRed.copy():
+        bullet_x, bullet_y = bullet
+        if (
+            not blue_rect_hit
+            and not red_rect_hit
+            and bullet_x < blue_rect_x + blue_rect_width
+            and bullet_x + shooter_width > blue_rect_x
+            and bullet_y < blue_rect_y + blue_rect_height
+            and bullet_y + shooter_height > blue_rect_y
+        ):
+            bulletsRed.remove(bullet)
+            blue_rect_hit = True
+            red_wins_message = False
 
-# Check for collision with red rectangle
-for bullet in bullets.copy():
-    bullet_x, bullet_y = bullet
-    if (
-        not blue_rect_hit
-        and not red_rect_hit
-        and bullet_x < rect_x + rect_width
-        and bullet_x + shooter_width > rect_x
-        and bullet_y < rect_y + rect_height
-        and bullet_y + shooter_height > rect_y
-    ):
-        bullets.remove(bullet)
-        red_rect_hit = True
-        red_wins_message = True
-
+    # Check for collision with red rectangle
+    for bullet in bulletsBlue.copy():
+        bullet_x, bullet_y = bullet
+        if (
+            not blue_rect_hit
+            and not red_rect_hit
+            and bullet_x < rect_x + rect_width
+            and bullet_x + shooter_width > rect_x
+            and bullet_y < rect_y + rect_height
+            and bullet_y + shooter_height > rect_y
+        ):
+            bulletsBlue.remove(bullet)
+            red_rect_hit = True
+            red_wins_message = True
 
 
     # Draw everything
@@ -123,7 +128,10 @@ for bullet in bullets.copy():
     
     pygame.draw.rect(screen, red, (rect_x, rect_y, rect_width, rect_height))
 
-    for bullet in bullets:
+    for bullet in bulletsBlue:
+        pygame.draw.rect(screen, white, (bullet[0], bullet[1], shooter_width, shooter_height))
+
+    for bullet in bulletsRed:
         pygame.draw.rect(screen, white, (bullet[0], bullet[1], shooter_width, shooter_height))
 
     # Display "Red Wins" message if blue rectangle is hit
@@ -133,9 +141,24 @@ for bullet in bullets.copy():
         if pygame.key.get_pressed()[pygame.K_SPACE]:
             # Reset the game or perform any desired action when space is pressed
             blue_rect_hit = False
-            red_wins_message = True
-            bullets = []
+            red_rect_hit = False
+            red_wins_message = False
+            blue_wins_message = False
+            bulletsBlue = []
+            bulletsRed = []
+    elif red_rect_hit and not blue_wins_message:
+        red_wins_text = font.render("Blue wins", True, white)
+        screen.blit(red_wins_text, (width // 2 - red_wins_text.get_width() // 2, height // 2 - red_wins_text.get_height() // 2))
+        if pygame.key.get_pressed()[pygame.K_SPACE]:
+            # Reset the game or perform any desired action when space is pressed
+            blue_rect_hit = False
+            red_rect_hit = False
+            red_wins_message = False
+            blue_wins_message = False
+            bulletsBlue = []
+            bulletsRed = []
 
     pygame.display.flip()
 
     pygame.time.Clock().tick(60)
+
