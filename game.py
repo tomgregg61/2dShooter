@@ -82,20 +82,37 @@ while True:
     # Remove bullets that are out of the screen
     bullets = [(x, y) for x, y in bullets if y > 0]
 
-    # Check for collision with blue rectangle
-    for bullet in bullets.copy():
-        bullet_x, bullet_y = bullet
-        if (
-            not blue_rect_hit
-            and not red_rect_hit
-            and bullet_x < blue_rect_x + blue_rect_width
-            and bullet_x + shooter_width > blue_rect_x
-            and bullet_y < blue_rect_y + blue_rect_height
-            and bullet_y + shooter_height > blue_rect_y
-        ):
-            bullets.remove(bullet)
-            blue_rect_hit = True
-            red_wins_message = False
+# Check for collision with blue rectangle
+for bullet in bullets.copy():
+    bullet_x, bullet_y = bullet
+    if (
+        not blue_rect_hit
+        and not red_rect_hit
+        and bullet_x < blue_rect_x + blue_rect_width
+        and bullet_x + shooter_width > blue_rect_x
+        and bullet_y < blue_rect_y + blue_rect_height
+        and bullet_y + shooter_height > blue_rect_y
+    ):
+        bullets.remove(bullet)
+        blue_rect_hit = True
+        red_wins_message = False
+
+# Check for collision with red rectangle
+for bullet in bullets.copy():
+    bullet_x, bullet_y = bullet
+    if (
+        not blue_rect_hit
+        and not red_rect_hit
+        and bullet_x < rect_x + rect_width
+        and bullet_x + shooter_width > rect_x
+        and bullet_y < rect_y + rect_height
+        and bullet_y + shooter_height > rect_y
+    ):
+        bullets.remove(bullet)
+        red_rect_hit = True
+        red_wins_message = True
+
+
 
     # Draw everything
     screen.fill(black)
